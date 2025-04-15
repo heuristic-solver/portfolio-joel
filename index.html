@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joel AJ | AI Research</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/gsap.min.js"></script>
+    <style>
+        :root {
+            --neuron-purple: #9d65ff;
+            --synapse-blue: #00e0ff;
+            --activation-pink: #ff4d8d;
+            --latent-space: #0a0a20;
+            --gradient-start: #4facfe;
+            --gradient-end: #00f2fe;
+        }
+        body { 
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--latent-space); 
+            color: #e0e0ff;
+            line-height: 1.6;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        #bg { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+        }
+        #container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+        header {
+            padding: 3rem 0;
+            border-bottom: 1px solid rgba(157, 101, 255, 0.2);
+        }
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 400;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.3rem;
+        }
+        .tagline {
+            font-size: 1.2rem;
+            color: var(--synapse-blue);
+            position: relative;
+        }
+        .tagline:after {
+            content: "⟶ latent space exploration";
+            display: block;
+            font-size: 0.8rem;
+            color: var(--neuron-purple);
+            margin-top: 0.3rem;
+            opacity: 0.8;
+        }
+        nav {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        nav a {
+            color: var(--synapse-blue);
+            text-decoration: none;
+            font-weight: 400;
+            position: relative;
+            padding-bottom: 0.2rem;
+            font-size: 1rem;
+        }
+        nav a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(90deg, var(--activation-pink), var(--neuron-purple));
+            transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+        nav a:hover:after {
+            width: 100%;
+        }
+        section {
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2rem);
+            margin: 2rem 0;
+            color: var(--activation-pink);
+            font-weight: 400;
+        }
+        .content-block {
+            margin: 2rem 0;
+            padding: 1.8rem;
+            background: rgba(20, 10, 40, 0.3);
+            border-radius: 4px;
+            border-left: 2px solid var(--neuron-purple);
+            transition: all 0.4s;
+            backdrop-filter: blur(6px);
+        }
+        .content-block:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(157, 101, 255, 0.1);
+            background: rgba(20, 10, 40, 0.4);
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--neuron-purple);
+        }
+        h3 {
+            font-size: 1.2rem;
+            margin: 1rem 0 0.5rem;
+            color: var(--synapse-blue);
+        }
+        p {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        .date {
+            display: inline-block;
+            font-size: 0.8rem;
+            color: var(--synapse-blue);
+            background: rgba(0, 224, 255, 0.1);
+            padding: 0.2rem 0.8rem;
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+        }
+        .highlight {
+            color: var(--activation-pink);
+            font-weight: 500;
+        }
+        .tech-tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(157, 101, 255, 0.2);
+            border-radius: 12px;
+            color: var(--synapse-blue);
+        }
+        .social-links {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            z-index: 10;
+        }
+        .social-links a {
+            color: white;
+            background: rgba(157, 101, 255, 0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+            backdrop-filter: blur(4px);
+        }
+        .social-links a:hover {
+            background: linear-gradient(45deg, var(--activation-pink), var(--neuron-purple));
+            transform: translateY(-3px) scale(1.1);
+        }
+        .social-icon {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+        .computational-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.05;
+            pointer-events: none;
+            background-image: 
+                linear-gradient(rgba(157, 101, 255, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(157, 101, 255, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .project-features {
+            margin: 1rem 0;
+        }
+        .project-features p {
+            position: relative;
+            padding-left: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .project-features p:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--activation-pink);
+        }
+        
+        /* Neural Network Demo Styles */
+        .demo-container {
+            position: relative;
+            height: 400px;
+            margin: 2rem 0;
+            border: 1px solid rgba(157, 101, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #network-canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .demo-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+        }
+        
+        .demo-btn {
+            background: linear-gradient(45deg, var(--neuron-purple), var(--synapse-blue));
+            border: none;
+            padding: 12px 24px;
+            color: white;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(157, 101, 255, 0.4);
+            transition: all 0.3s;
+        }
+        
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(157, 101, 255, 0.6);
+        }
+        
+        .io-node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            z-index: 5;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        
+        .input-node {
+            left: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 77, 141, 0.8);
+        }
+        
+        .output-node {
+            right: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 224, 255, 0.8);
+        }
+        
+        .data-particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--activation-pink);
+            z-index: 4;
+            pointer-events: none;
+        }
+        
+        .demo-title {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 5;
+            color: var(--synapse-blue);
+            font-size: 14px;
+        }
+        
+        /* Click Effect Elements */
+        .click-particle {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--activation-pink);
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+        }
+        
+        .neural-wave {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid var(--synapse-blue);
+            pointer-events: none;
+            z-index: 999;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+        }
+        
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 900;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        
+        .dimensional-portal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--neuron-purple), transparent);
+            transform: translate(-50%, -50%);
+            z-index: 950;
+            pointer-events: none;
+            opacity: 0;
+        }
+        
+        .quantum-string {
+            position: fixed;
+            height: 2px;
+            background: var(--synapse-blue);
+            transform-origin: left center;
+            z-index: 800;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="computational-grid"></div>
+    <canvas id="bg"></canvas>
+    <div class="fullscreen-overlay"></div>
+    <div class="dimensional-portal"></div>
+    
+    <div id="container">
+        <header>
+            <h1>Joel AJ</h1>
+            <p class="tagline">Manifold learning in high-dimensional spaces</p>
+            <nav>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#experience" class="nav-link">Experience</a>
+                <a href="#projects" class="nav-link">Projects</a>
+                <a href="#demo" class="nav-link">Demo</a>
+                <a href="#contact" class="nav-link">Connect</a>
+            </nav>
+        </header>
+
+        <section id="about">
+            <div class="content-block">
+                <h2>Neural Architect</h2>
+                <p>I develop cutting-edge models that combine advanced neural networks with novel mathematical approaches, achieving exceptional results across diverse domains.</p>
+                
+                <div class="project-features">
+                    <p><span class="highlight">Generative AI</span> — Specializing in GAN architectures including WGAN, SRGAN, and StyleGAN for image enhancement and synthesis</p>
+                    <p><span class="highlight">Quantum ML</span> — Exploring quantum-enhanced machine learning with Qiskit</p>
+                    <p><span class="highlight">Computer Vision</span> — Building systems for facial analysis, emotion recognition, and document processing</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience">
+            <h2 class="section-title">Training Epochs</h2>
+            
+            <div class="content-block">
+                <h3>Intel Unnati | AI Research Intern</h3>
+                <span class="date">MAY – JULY 2024</span>
+                <div class="project-features">
+                    <p>Developed and optimized an <span class="highlight">ESPCN model</span> for image super-resolution (32 PSNR, 81% SSIM on Div2k dataset)</p>
+                    <p>Built a custom data pipeline processing <span class="highlight">10,000+ images</span> with 60% artificial degradation</p>
+                    <p>Fine-tuned an <span class="highlight">SRGAN model</span> with perceptual loss functions for enhanced visual quality</p>
+                </div>
+                <div>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">TensorFlow</span>
+                    <span class="tech-tag">OpenCV</span>
+                </div>
+            </div>
+            
+            <div class="content-block">
+                <h3>TechnoHacks EduTech | AI Engineer</h3>
+                <span class="date">APRIL – MAY 2024</span>
+                <div class="project-features">
+                    <p>Developed a <span class="highlight">CNN-Mediapipe hybrid</span> for emotion classification (81% accuracy across 2000+ images)</p>
+                    <p>Created <span class="highlight">500+ anime faces</span> using neural style transfer for dataset augmentation</p>
+                    <p>Implemented <span class="highlight">Dlib facial landmark detection</span> for enhanced feature extraction</p>
+                </div>
+                <div>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">Mediapipe</span>
+                    <span class="tech-tag">Dlib</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2 class="section-title">Research Vectors</h2>
+            
+            <!-- NIG-LSTM Project -->
+            <div class="content-block">
+                <h3>NIG-LSTM Financial Forecasting</h3>
+                <div class="project-features">
+                    <p>Hybrid model combining <span class="highlight">Normal Inverse Gaussian</span> distributions with <span class="highlight">LSTM networks</span></p>
+                    <p>Integrated <span class="highlight">Geometric Brownian Motion</span> for price path simulation</p>
+                    <p>Achieved <span class="highlight">0.9942 R²</span> on Apple stock predictions</p>
+                    <p>Combined <span class="highlight">FinBERT</span> for sentiment analysis integration</p>
+                </div>
+                <div>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">TensorFlow</span>
+                    <span class="tech-tag">NIG</span>
+                    <span class="tech-tag">LSTM</span>
+                </div>
+            </div>
+            
+            <!-- Emotion Recognition -->
+            <div class="content-block">
+                <h3>Neural Emotion Classifier</h3>
+                <div class="project-features">
+                    <p><span class="highlight">Dlib's 68-point</span> facial landmark detection</p>
+                    <p>Custom <span class="highlight">CNN architecture</span> with 81% accuracy</p>
+                    <p>Dataset augmentation using <span class="highlight">Style Transfer</span></p>
+                    <p>Real-time implementation with <span class="highlight">OpenCV</span></p>
+                </div>
+                <div>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">Dlib</span>
+                    <span class="tech-tag">TensorFlow</span>
+                </div>
+            </div>
+            
+            <!-- Document Scanner -->
+            <div class="content-block">
+                <h3>Smart Document Scanner</h3>
+                <div class="project-features">
+                    <p><span class="highlight">OpenCV</span> implementation with automatic edge detection</p>
+                    <p>Perspective correction and <span class="highlight">adaptive thresholding</span></p>
+                    <p>Batch processing with <span class="highlight">PIL image enhancement</span></p>
+                </div>
+                <div>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">OpenCV</span>
+                    <span class="tech-tag">PIL</span>
+                </div>
+            </div>
+            
+            <!-- Attendance System -->
+            <div class="content-block">
+                <h3>AI-Powered Attendance System</h3>
+                <div class="project-features">
+                    <p>Real-time <span class="highlight">face recognition</span> using Haar cascades</p>
+                    <p><span class="highlight">Face encoding</span> with dlib's recognition model</p>
+                    <p>Interactive <span class="highlight">Pygame interface</span> with visual/audio feedback</p>
+                    <p>Attendance logging with <span class="highlight">Pandas</span></p>
+                </div>
+                <div>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">face_recognition</span>
+                    <span class="tech-tag">OpenCV</span>
+                </div>
+            </div>
+            
+            <!-- Quantum KNN -->
+            <div class="content-block">
+                <h3>Quantum k-Nearest Neighbors</h3>
+                <div class="project-features">
+                    <p><span class="highlight">Qiskit implementation</span> of quantum distance metrics</p>
+                    <p>Hybrid <span class="highlight">quantum-classical classification</span></p>
+                    <p>Benchmarked against classical KNN</p>
+                </div>
+                <div>
+                    <span class="tech-tag">Qiskit</span>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">Quantum ML</span>
+                </div>
+            </div>
+            
+            <!-- Face Swapping -->
+            <div class="content-block">
+                <h3>Neural Face Swapping</h3>
+                <div class="project-features">
+                    <p><span class="highlight">68-point landmark detection</span> with dlib</p>
+                    <p><span class="highlight">Affine transformation</span> for seamless blending</p>
+                    <p>Advanced <span class="highlight">color correction</span> algorithms</p>
+                </div>
+                <div>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">dlib</span>
+                    <span class="tech-tag">OpenCV</span>
+                </div>
+            </div>
+            
+            <!-- Anime GAN -->
+            <div class="content-block">
+                <h3>Anime Face Generation</h3>
+                <div class="project-features">
+                    <p><span class="highlight">StyleGAN2</span> implementation for anime faces</p>
+                    <p>Generated <span class="highlight">500+ unique portraits</span></p>
+                    <p>Latent space exploration for <span class="highlight">controlled generation</span></p>
+                </div>
+                <div>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">TensorFlow</span>
+                    <span class="tech-tag">GANs</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Neural Network Demo Section -->
+        <section id="demo">
+            <h2 class="section-title">Neural Network Demo</h2>
+            
+            <div class="content-block">
+                <h3>Interactive Processing Demo</h3>
+                <p>See how information transforms as it passes through a neural network. Click the button below to send sample data through the network and observe the transformation.</p>
+                
+                <div class="demo-container">
+                    <canvas id="network-canvas"></canvas>
+                    <div class="demo-title">NEURAL NETWORK PROCESSING DEMO</div>
+                    <div class="io-node input-node">Input</div>
+                    <div class="io-node output-node">Output</div>
+                    <div class="demo-controls">
+                        <button class="demo-btn" id="process-btn">Process Data</button>
+                    </div>
+                </div>
+                
+                <div class="project-features">
+                    <p><span class="highlight">Visualization</span> — Shows the flow of data through network layers</p>
+                    <p><span class="highlight">Activation</span> — Demonstrates how neurons process information</p>
+                    <p><span class="highlight">Transformation</span> — Output reflects processed results</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <div class="content-block">
+                <h2 class="section-title">Connect</h2>
+                <p>For research collaborations or technical discussions:</p>
+                <p>Connect with me through these platforms:</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="https://www.linkedin.com/in/joelalexj/" target="_blank" style="color: var(--synapse-blue); margin-right: 1rem;">LinkedIn</a>
+                    <a href="https://github.com/heuristic-solver" target="_blank" style="color: var(--synapse-blue); margin-right: 1rem;">GitHub</a>
+                    <a href="https://medium.com/@joelalexjohn9" target="_blank" style="color: var(--synapse-blue);">Medium</a>
+                </div>
+            </div>
+        </section>
+
+        <div class="social-links">
+            <a href="https://github.com/heuristic-solver" target="_blank" aria-label="GitHub">
+                <svg class="social-icon" viewBox="0 0 24 24">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                </svg>
+            </a>
+            <a href="https://medium.com/@joelalexjohn9" target="_blank" aria-label="Medium">
+                <svg class="social-icon" viewBox="0 0 24 24">
+                    <path d="M2.846 6.887c.03-.295-.083-.586-.303-.784l-2.24-2.7v-.403h6.958l5.378 11.795 4.728-11.795h6.633v.403l-1.916 1.837c-.165.126-.247.333-.213.538v13.498c-.034.204.048.411.213.537l1.871 1.837v.403h-9.412v-.403l1.939-1.882c.19-.19.19-.246.19-.538v-10.91l-5.389 13.688h-.728l-6.275-13.688v9.174c-.052.385.076.774.347 1.052l2.521 3.058v.404h-7.148v-.404l2.521-3.058c.27-.279.39-.67.325-1.052v-10.608z"/>
+                </svg>
+            </a>
+            <a href="https://www.linkedin.com/in/joelalexj/" target="_blank" aria-label="LinkedIn">
+                <svg class="social-icon" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Original background visualization
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ 
+                canvas: document.getElementById('bg'),
+                alpha: true,
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            camera.position.z = 15;
+            
+            const network = new THREE.Group();
+            scene.add(network);
+            
+            const createNeuron = (x, y, z, size=0.3) => {
+                const geometry = new THREE.IcosahedronGeometry(size, 1);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0x9d65ff,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const neuron = new THREE.Mesh(geometry, material);
+                neuron.position.set(x, y, z);
+                return neuron;
+            };
+            
+            const createSynapse = (start, end) => {
+                const curve = new THREE.LineCurve3(start, end);
+                const points = curve.getPoints(20);
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({
+                    color: 0x00e0ff,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                return new THREE.Line(geometry, material);
+            };
+            
+            const layers = [];
+            const layerCount = 4;
+            const neuronsPerLayer = 5;
+            
+            for(let l = 0; l < layerCount; l++) {
+                const layer = new THREE.Group();
+                const x = (l - layerCount/2) * 3;
+                
+                for(let n = 0; n < neuronsPerLayer; n++) {
+                    const y = (n - neuronsPerLayer/2) * 1.5;
+                    const neuron = createNeuron(x, y, 0);
+                    layer.add(neuron);
+                    
+                    if(l > 0) {
+                        for(let pn = 0; pn < neuronsPerLayer; pn++) {
+                            const py = (pn - neuronsPerLayer/2) * 1.5;
+                            const px = ((l-1) - layerCount/2) * 3;
+                            const synapse = createSynapse(
+                                new THREE.Vector3(px, py, 0),
+                                new THREE.Vector3(x, y, 0)
+                            );
+                            network.add(synapse);
+                        }
+                    }
+                }
+                
+                layers.push(layer);
+                network.add(layer);
+            }
+            
+            const quantumCloud = new THREE.Group();
+            const cloudPoints = 200;
+            const cloudGeometry = new THREE.BufferGeometry();
+            const cloudPositions = new Float32Array(cloudPoints * 3);
+            
+            for(let i = 0; i < cloudPoints; i++) {
+                cloudPositions[i*3] = (Math.random() - 0.5) * 10;
+                cloudPositions[i*3+1] = (Math.random() - 0.5) * 10;
+                cloudPositions[i*3+2] = (Math.random() - 0.5) * 10;
+            }
+            
+            cloudGeometry.setAttribute('position', new THREE.BufferAttribute(cloudPositions, 3));
+            
+            const cloudMaterial = new THREE.PointsMaterial({
+                size: 0.2,
+                color: 0x00e0ff,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending,
+                sizeAttenuation: true
+            });
+            
+            const cloud = new THREE.Points(cloudGeometry, cloudMaterial);
+            quantumCloud.add(cloud);
+            scene.add(quantumCloud);
+            
+            const dataParticles = new THREE.Group();
+            const particleCount = 100;
+            const particleGeometry = new THREE.BufferGeometry();
+            const particlePositions = new Float32Array(particleCount * 3);
+            const particleColors = new Float32Array(particleCount * 3);
+            
+            for(let i = 0; i < particleCount; i++) {
+                particlePositions[i*3] = (Math.random() - 0.5) * 20;
+                particlePositions[i*3+1] = (Math.random() - 0.5) * 10;
+                particlePositions[i*3+2] = (Math.random() - 0.5) * 10;
+                
+                particleColors[i*3] = 0.9;
+                particleColors[i*3+1] = 0.2 + Math.random() * 0.5;
+                particleColors[i*3+2] = 0.8 + Math.random() * 0.2;
+            }
+            
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+            
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.3,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+            
+            const particles = new THREE.Points(particleGeometry, particleMaterial);
+            dataParticles.add(particles);
+            scene.add(dataParticles);
+            
+            // Create quantum strings
+            const quantumStrings = [];
+            for (let i = 0; i < 20; i++) {
+                const string = document.createElement('div');
+                string.className = 'quantum-string';
+                string.style.width = '0px';
+                string.style.left = `${Math.random() * 100}%`;
+                string.style.top = `${Math.random() * 100}%`;
+                string.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(string);
+                quantumStrings.push(string);
+            }
+            
+            function triggerClickEffect(x, y) {
+                // Create click particle
+                const particle = document.createElement('div');
+                particle.className = 'click-particle';
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                document.body.appendChild(particle);
+                
+                // Create neural wave
+                const wave = document.createElement('div');
+                wave.className = 'neural-wave';
+                wave.style.left = `${x}px`;
+                wave.style.top = `${y}px`;
+                document.body.appendChild(wave);
+                
+                // Animate particle explosion
+                gsap.to(particle, {
+                    scale: 5,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: "power2.out",
+                    onComplete: () => particle.remove()
+                });
+                
+                // Animate neural wave
+                gsap.to(wave, {
+                    width: '100vw',
+                    height: '100vw',
+                    opacity: 0.3,
+                    duration: 1.2,
+                    ease: "expo.out",
+                    onComplete: () => wave.remove()
+                });
+                
+                // Activate dimensional portal
+                const portal = document.querySelector('.dimensional-portal');
+                gsap.to(portal, {
+                    width: '0px',
+                    height: '0px',
+                    opacity: 0,
+                    duration: 0.1
+                });
+                
+                portal.style.left = `${x}px`;
+                portal.style.top = `${y}px`;
+                
+                gsap.to(portal, {
+                    width: '150vw',
+                    height: '150vw',
+                    opacity: 0.7,
+                    duration: 1,
+                    ease: "expo.out"
+                });
+                
+                // Activate fullscreen overlay
+                const overlay = document.querySelector('.fullscreen-overlay');
+                gsap.to(overlay, {
+                    opacity: 0.6,
+                    duration: 0.5
+                });
+                
+                // Animate quantum strings
+                quantumStrings.forEach(string => {
+                    gsap.to(string, {
+                        width: `${Math.random() * 200 + 50}px`,
+                        opacity: Math.random() * 0.5 + 0.3,
+                        duration: 1,
+                        ease: "elastic.out(1, 0.5)"
+                    });
+                });
+                
+                // Page distortion effect
+                gsap.to("#container", {
+                    scale: 0.95,
+                    rotate: Math.random() * 4 - 2,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+                
+                // Text effects
+                gsap.to("h1", {
+                    letterSpacing: "5px",
+                    duration: 0.5,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.inOut"
+                });
+                
+                gsap.to(".tagline", {
+                    x: 10,
+                    duration: 0.3,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "sine.inOut"
+                });
+                
+                // Neural network activation
+                layers.forEach((layer, i) => {
+                    gsap.to(layer.rotation, {
+                        x: Math.random() * Math.PI/4 - Math.PI/8,
+                        y: Math.random() * Math.PI/4 - Math.PI/8,
+                        z: Math.random() * Math.PI/4 - Math.PI/8,
+                        duration: 1,
+                        ease: "elastic.out(1, 0.5)"
+                    });
+                });
+                
+                // Quantum cloud implosion
+                gsap.to(quantumCloud.position, {
+                    x: (x / window.innerWidth - 0.5) * 10,
+                    y: -(y / window.innerHeight - 0.5) * 10,
+                    duration: 0.8,
+                    ease: "power2.out"
+                });
+                
+                gsap.to(quantumCloud.scale, {
+                    x: 0.5,
+                    y: 0.5,
+                    z: 0.5,
+                    duration: 0.8,
+                    ease: "power2.out",
+                    yoyo: true,
+                    repeat: 1
+                });
+                
+                // Particle explosion from click point
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'click-particle';
+                    particle.style.left = `${x}px`;
+                    particle.style.top = `${y}px`;
+                    particle.style.background = i % 2 === 0 ? 'var(--activation-pink)' : 'var(--synapse-blue)';
+                    document.body.appendChild(particle);
+                    
+                    gsap.to(particle, {
+                        x: (Math.random() - 0.5) * 300,
+                        y: (Math.random() - 0.5) * 300,
+                        opacity: 0,
+                        scale: Math.random() * 3 + 1,
+                        duration: 1.5,
+                        ease: "power2.out",
+                        onComplete: () => particle.remove()
+                    });
+                }
+                
+                // Reset effects after animation
+                setTimeout(() => {
+                    gsap.to(portal, {
+                        width: '0px',
+                        height: '0px',
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: "power2.in"
+                    });
+                    
+                    gsap.to(overlay, {
+                        opacity: 0,
+                        duration: 0.8
+                    });
+                    
+                    gsap.to("#container", {
+                        scale: 1,
+                        rotate: 0,
+                        duration: 0.8,
+                        ease: "elastic.out(1, 0.5)"
+                    });
+                    
+                    quantumStrings.forEach(string => {
+                        gsap.to(string, {
+                            width: '0px',
+                            opacity: 0,
+                            duration: 0.5,
+                            ease: "power2.in"
+                        });
+                    });
+                    
+                    layers.forEach(layer => {
+                        gsap.to(layer.rotation, {
+                            x: 0,
+                            y: 0,
+                            z: 0,
+                            duration: 1.5,
+                            ease: "elastic.out(1, 0.5)"
+                        });
+                    });
+                    
+                    gsap.to(quantumCloud.position, {
+                        x: 0,
+                        y: 0,
+                        duration: 1.5,
+                        ease: "elastic.out(1, 0.5)"
+                    });
+                }, 1000);
+            }
+            
+            // Navigation effects - only trigger animations on nav link clicks
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Get click position
+                    const rect = this.getBoundingClientRect();
+                    const x = rect.left + rect.width/2;
+                    const y = rect.top + rect.height/2;
+                    
+                    // Trigger the click effect
+                    triggerClickEffect(x, y);
+                    
+                    // Scroll to section after a delay
+                    setTimeout(() => {
+                        document.querySelector(this.getAttribute('href')).scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }, 200);
+                });
+            });
+            
+            // Neural Network Demo Code
+            const demoScene = new THREE.Scene();
+            const demoCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const demoRenderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('network-canvas'),
+                antialias: true,
+                alpha: true
+            });
+            
+            const demoContainer = document.querySelector('.demo-container');
+            demoRenderer.setSize(demoContainer.clientWidth, demoContainer.clientHeight);
+            
+            demoCamera.position.z = 15;
+            
+            // Create demo neural network
+            const demoNetwork = new THREE.Group();
+            demoScene.add(demoNetwork);
+            
+            const demoLayers = [];
+            const demoLayerCount = 3;
+            const demoNeuronsPerLayer = 4;
+            const demoLayerSpacing = 6;
+            const demoNeuronSpacing = 3;
+            
+            for (let l = 0; l < demoLayerCount; l++) {
+                const layer = new THREE.Group();
+                const x = (l - (demoLayerCount - 1) / 2) * demoLayerSpacing;
+                
+                for (let n = 0; n < demoNeuronsPerLayer; n++) {
+                    const y = (n - (demoNeuronsPerLayer - 1) / 2) * demoNeuronSpacing;
+                    const neuron = createNeuron(x, y, 0, 0.6);
+                    layer.add(neuron);
+                    
+                    if (l > 0) {
+                        for (let pn = 0; pn < demoNeuronsPerLayer; pn++) {
+                            const py = (pn - (demoNeuronsPerLayer - 1) / 2) * demoNeuronSpacing;
+                            const px = ((l - 1) - (demoLayerCount - 1) / 2) * demoLayerSpacing;
+                            const synapse = createSynapse(
+                                new THREE.Vector3(px, py, 0),
+                                new THREE.Vector3(x, y, 0)
+                            );
+                            demoNetwork.add(synapse);
+                        }
+                    }
+                }
+                
+                demoLayers.push(layer);
+                demoNetwork.add(layer);
+            }
+            
+            // Demo animation variables
+            let isAnimating = false;
+            
+            // Process button click handler
+            document.getElementById('process-btn').addEventListener('click', function() {
+                if (isAnimating) return;
+                isAnimating = true;
+                
+                // Reset output
+                const outputNode = document.querySelector('.output-node');
+                outputNode.textContent = "Output";
+                outputNode.style.background = "rgba(0, 224, 255, 0.8)";
+                
+                // Create input data particle (DOM element)
+                const inputParticle = document.createElement('div');
+                inputParticle.className = 'data-particle';
+                inputParticle.style.left = '10%';
+                inputParticle.style.top = '50%';
+                document.querySelector('.demo-container').appendChild(inputParticle);
+                
+                // Animate through the network
+                const path = [
+                    { x: 10, y: 50 }, // Start at input
+                    { x: 25, y: 30 }, // Enter first layer
+                    { x: 40, y: 40 },
+                    { x: 55, y: 30 }, // Through hidden layers
+                    { x: 70, y: 40 },
+                    { x: 85, y: 50 }  // Reach output
+                ];
+                
+                // Animation timeline
+                const tl = gsap.timeline({
+                    onComplete: function() {
+                        // Remove particle
+                        inputParticle.remove();
+                        
+                        // Show transformed output
+                        outputNode.textContent = "Result";
+                        outputNode.style.background = "rgba(157, 101, 255, 0.8)";
+                        
+                        // Activate network visualization
+                        gsap.to(demoLayers[0].rotation, {
+                            x: Math.PI/8,
+                            duration: 0.5,
+                            ease: "power2.inOut"
+                        });
+                        
+                        gsap.to(demoLayers[1].rotation, {
+                            y: Math.PI/8,
+                            duration: 0.5,
+                            delay: 0.2,
+                            ease: "power2.inOut"
+                        });
+                        
+                        gsap.to(demoLayers[2].rotation, {
+                            x: -Math.PI/8,
+                            duration: 0.5,
+                            delay: 0.4,
+                            ease: "power2.inOut"
+                        });
+                        
+                        // Reset after animation
+                        setTimeout(() => {
+                            gsap.to(demoLayers[0].rotation, {
+                                x: 0,
+                                duration: 0.8,
+                                ease: "elastic.out(1, 0.5)"
+                            });
+                            
+                            gsap.to(demoLayers[1].rotation, {
+                                y: 0,
+                                duration: 0.8,
+                                ease: "elastic.out(1, 0.5)"
+                            });
+                            
+                            gsap.to(demoLayers[2].rotation, {
+                                x: 0,
+                                duration: 0.8,
+                                ease: "elastic.out(1, 0.5)",
+                                onComplete: () => {
+                                    isAnimating = false;
+                                }
+                            });
+                        }, 1000);
+                    }
+                });
+                
+                // Animate particle along path
+                path.forEach((point, i) => {
+                    tl.to(inputParticle, {
+                        left: `${point.x}%`,
+                        top: `${point.y}%`,
+                        duration: 0.3,
+                        ease: "power1.inOut"
+                    }, i * 0.3);
+                });
+            });
+            
+            // Animation loop for background
+            function animateBackground() {
+                requestAnimationFrame(animateBackground);
+                
+                const time = Date.now() * 0.001;
+                layers.forEach((layer, i) => {
+                    layer.rotation.x = Math.sin(time * 0.5 + i) * 0.2;
+                    layer.rotation.y = Math.cos(time * 0.3 + i) * 0.3;
+                });
+                
+                const positions = cloudGeometry.attributes.position.array;
+                for(let i = 0; i < cloudPoints; i++) {
+                    positions[i*3] += (Math.random() - 0.5) * 0.02;
+                    positions[i*3+1] += (Math.random() - 0.5) * 0.02;
+                    positions[i*3+2] += (Math.random() - 0.5) * 0.02;
+                    
+                    const radius = Math.sqrt(
+                        positions[i*3] * positions[i*3] +
+                        positions[i*3+1] * positions[i*3+1] +
+                        positions[i*3+2] * positions[i*3+2]
+                    );
+                    if(radius > 5) {
+                        positions[i*3] *= 5/radius;
+                        positions[i*3+1] *= 5/radius;
+                        positions[i*3+2] *= 5/radius;
+                    }
+                }
+                cloudGeometry.attributes.position.needsUpdate = true;
+                
+                const particlePos = particleGeometry.attributes.position.array;
+                for(let i = 0; i < particleCount; i++) {
+                    particlePos[i*3] += Math.sin(time + i) * 0.01;
+                    particlePos[i*3+1] += Math.cos(time * 0.7 + i) * 0.01;
+                    particlePos[i*3+2] += Math.sin(time * 0.3 + i) * 0.01;
+                }
+                particleGeometry.attributes.position.needsUpdate = true;
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Demo animation loop
+            function animateDemo() {
+                requestAnimationFrame(animateDemo);
+                
+                // Gentle network pulse
+                const time = Date.now() * 0.001;
+                demoLayers.forEach((layer, i) => {
+                    layer.rotation.x = Math.sin(time * 0.3 + i) * 0.1;
+                    layer.rotation.y = Math.cos(time * 0.2 + i) * 0.1;
+                });
+                
+                demoRenderer.render(demoScene, demoCamera);
+            }
+            
+            animateBackground();
+            animateDemo();
+            
+            // Handle window resize
+            function handleResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                
+                const demoContainer = document.querySelector('.demo-container');
+                const width = demoContainer.clientWidth;
+                const height = demoContainer.clientHeight;
+                demoCamera.aspect = width / height;
+                demoCamera.updateProjectionMatrix();
+                demoRenderer.setSize(width, height);
+            }
+            
+            window.addEventListener('resize', handleResize);
+            handleResize(); // Initial sizing
+        });
+    </script>
+</body>
+</html>

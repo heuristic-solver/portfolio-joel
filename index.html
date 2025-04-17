@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,7 @@
             --gradient-start: #4facfe;
             --gradient-end: #00f2fe;
         }
+
         body { 
             font-family: 'IBM Plex Mono', monospace;
             background: var(--latent-space); 
@@ -25,6 +27,7 @@
             margin: 0;
             padding: 0;
         }
+
         #bg { 
             position: fixed; 
             top: 0; 
@@ -33,6 +36,7 @@
             width: 100%;
             height: 100%;
         }
+
         #container {
             min-height: 100vh;
             display: flex;
@@ -42,10 +46,12 @@
             margin: 0 auto;
             position: relative;
         }
+
         header {
             padding: 3rem 0;
             border-bottom: 1px solid rgba(157, 101, 255, 0.2);
         }
+
         h1 {
             font-size: clamp(2.5rem, 5vw, 3.5rem);
             font-weight: 400;
@@ -55,11 +61,13 @@
             color: transparent;
             margin-bottom: 0.3rem;
         }
+
         .tagline {
             font-size: 1.2rem;
             color: var(--synapse-blue);
             position: relative;
         }
+
         .tagline:after {
             content: "⟶ latent space exploration";
             display: block;
@@ -68,11 +76,13 @@
             margin-top: 0.3rem;
             opacity: 0.8;
         }
+
         nav {
             display: flex;
             gap: 1.5rem;
             margin-top: 1.5rem;
         }
+
         nav a {
             color: var(--synapse-blue);
             text-decoration: none;
@@ -81,6 +91,7 @@
             padding-bottom: 0.2rem;
             font-size: 1rem;
         }
+
         nav a:after {
             content: '';
             position: absolute;
@@ -91,19 +102,23 @@
             background: linear-gradient(90deg, var(--activation-pink), var(--neuron-purple));
             transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1);
         }
+
         nav a:hover:after {
             width: 100%;
         }
+
         section {
             min-height: 100vh;
             padding: 2rem 0;
         }
+
         .section-title {
             font-size: clamp(1.8rem, 4vw, 2rem);
             margin: 2rem 0;
             color: var(--activation-pink);
             font-weight: 400;
         }
+
         .content-block {
             margin: 2rem 0;
             padding: 1.8rem;
@@ -113,25 +128,30 @@
             transition: all 0.4s;
             backdrop-filter: blur(6px);
         }
+
         .content-block:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 20px rgba(157, 101, 255, 0.1);
             background: rgba(20, 10, 40, 0.4);
         }
+
         h2 {
             font-size: 1.5rem;
             margin-bottom: 1rem;
             color: var(--neuron-purple);
         }
+
         h3 {
             font-size: 1.2rem;
             margin: 1rem 0 0.5rem;
             color: var(--synapse-blue);
         }
+
         p {
             margin-bottom: 1rem;
             font-size: 0.95rem;
         }
+
         .date {
             display: inline-block;
             font-size: 0.8rem;
@@ -141,10 +161,12 @@
             border-radius: 12px;
             margin-bottom: 0.8rem;
         }
+
         .highlight {
             color: var(--activation-pink);
             font-weight: 500;
         }
+
         .tech-tag {
             display: inline-block;
             font-size: 0.7rem;
@@ -155,6 +177,7 @@
             border-radius: 12px;
             color: var(--synapse-blue);
         }
+
         .social-links {
             position: fixed;
             bottom: 1.5rem;
@@ -164,6 +187,7 @@
             gap: 0.8rem;
             z-index: 10;
         }
+
         .social-links a {
             color: white;
             background: rgba(157, 101, 255, 0.2);
@@ -177,15 +201,18 @@
             transition: all 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
             backdrop-filter: blur(4px);
         }
+
         .social-links a:hover {
             background: linear-gradient(45deg, var(--activation-pink), var(--neuron-purple));
             transform: translateY(-3px) scale(1.1);
         }
+
         .social-icon {
             width: 16px;
             height: 16px;
             fill: white;
         }
+
         .computational-grid {
             position: fixed;
             top: 0;
@@ -200,19 +227,45 @@
                 linear-gradient(90deg, rgba(157, 101, 255, 0.3) 1px, transparent 1px);
             background-size: 40px 40px;
         }
+
         .project-features {
             margin: 1rem 0;
         }
+
         .project-features p {
             position: relative;
             padding-left: 1.2rem;
             margin-bottom: 0.5rem;
         }
+
         .project-features p:before {
             content: "→";
             position: absolute;
             left: 0;
             color: var(--activation-pink);
+        }
+        
+        /* Certifications Section - Simplified without logos */
+        .certifications-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .certification-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(157, 101, 255, 0.1);
+        }
+        
+        .certification-title {
+            font-size: 1.1rem;
+            color: var(--synapse-blue);
+            margin-bottom: 0.3rem;
+        }
+        
+        .certification-issuer {
+            font-size: 0.9rem;
+            color: var(--neuron-purple);
         }
         
         /* Neural Network Demo Styles */
@@ -367,6 +420,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="computational-grid"></div>
     <canvas id="bg"></canvas>
@@ -381,6 +435,7 @@
                 <a href="#about" class="nav-link">About</a>
                 <a href="#experience" class="nav-link">Experience</a>
                 <a href="#projects" class="nav-link">Projects</a>
+                <a href="#certifications" class="nav-link">Certifications</a>
                 <a href="#demo" class="nav-link">Demo</a>
                 <a href="#contact" class="nav-link">Connect</a>
             </nav>
@@ -543,6 +598,60 @@
                     <span class="tech-tag">TensorFlow</span>
                     <span class="tech-tag">GANs</span>
                 </div>
+            </div>
+        </section>
+
+        <!-- Certifications Section - Simplified without logos -->
+        <section id="certifications">
+            <h2 class="section-title">Certifications</h2>
+            
+            <div class="content-block">
+                <ul class="certifications-list">
+                    <li class="certification-item">
+                        <h3 class="certification-title">AWS Certified Cloud Practitioner</h3>
+                        <p class="certification-issuer">Amazon Web Services</p>
+                    </li>
+                    
+                    <li class="certification-item">
+                        <h3 class="certification-title">Google Cloud Big Data and Machine Learning Fundamentals</h3>
+                        <p class="certification-issuer">Google Cloud</p>
+                    </li>
+                    
+                    <li class="certification-item">
+                        <h3 class="certification-title">Introduction to AI and Machine Learning on Google Cloud</h3>
+                        <p class="certification-issuer">Google Cloud</p>
+                    </li>
+                    
+                    <li class="certification-item">
+                        <h3 class="certification-title">Launching into Machine Learning</h3>
+                        <p class="certification-issuer">Google Cloud</p>
+                    </li>
+                    
+                    <li class="certification-item">
+                        <h3 class="certification-title">How Google Does Machine Learning</h3>
+                        <p class="certification-issuer">Google Cloud</p>
+                    </li>
+                    
+                    <li class="certification-item">
+                        <h3 class="certification-title">Advanced Computer Vision with TensorFlow</h3>
+                        <p class="certification-issuer">Coursera</p>
+                    </li>
+                    
+                    <li class="certification-item">
+                        <h3 class="certification-title">Generative Deep Learning with TensorFlow</h3>
+                        <p class="certification-issuer">Coursera</p>
+                    </li>
+                    
+                    <li class="certification-item">
+                        <h3 class="certification-title">Master Computer Vision™ OpenCV4 in Python with Deep Learning</h3>
+                        <p class="certification-issuer">Udemy</p>
+                    </li>
+                    
+                    <li class="certification-item">
+                        <h3 class="certification-title">Face Recognition using Python Language</h3>
+                        <p class="certification-issuer">Udemy</p>
+                    </li>
+                </ul>
             </div>
         </section>
 
